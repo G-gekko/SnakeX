@@ -81,6 +81,13 @@ public class Room implements Screen {
         gameTimer.setAlignment(0);
         gameTimer.setPosition(380, 300);
         stage.addActor(gameTimer);
+        
+        // Вывод сообшении о конце игры и набранных очков
+        gameOver = new Label("Game over\nscore: " + String.valueOf(score), style);
+        gameOver.setAlignment(0);
+        gameOver.setPosition(300, 300);
+        gameOver.setVisible(false);
+        stage.addActor(gameOver);
 
         // Подключаем управление стрелками для змеи.
         stage.addListener(new InputListener() {
@@ -152,11 +159,16 @@ public class Room implements Screen {
      * регулировки скорости змеи.
      */
     private float summDelta;
+
+    // Уведомление о конце игры
+    private Label gameOver;
     private boolean isGameOver = false;
 
     // Таймер игровой паузы
     private Label gameTimer;
     private int timer = 3;
+    
+    
 
     @Override
     public void render(float delta) {
@@ -165,7 +177,7 @@ public class Room implements Screen {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         summDelta += delta;
-        
+
         // Если игра только началась, или вернулась с паузы, то пускаем таймер
         if (timer > 0) {
            if (summDelta >= 1.0){
@@ -175,7 +187,7 @@ public class Room implements Screen {
         } else {
             gameTimer.setVisible(false);
         }
-        
+
         // пересчёт игровой логики (движение змеи) через определённый временной интервал, если змея жива.
         if (timer <= 0 && snake.isAlive && summDelta >= 0.2) {
             summDelta = 0;
@@ -187,12 +199,10 @@ public class Room implements Screen {
             // Если надпись о конце игры не инициализирована, то делаем это и выводим её.
             // Так же отмечааем заминку в секунду, чтобы пользователь случайно не
             // прокликал конец игры
+
+
             if (!isGameOver) {
-                Label.LabelStyle style = new Label.LabelStyle(SnakeX.fontBig, Color.BLACK);
-                Label gameOver = new Label("Game over\nscore: " + String.valueOf(score), style);
-                gameOver.setAlignment(0);
-                gameOver.setPosition(300, 300);
-                stage.addActor(gameOver);
+                gameOver.setVisible(true);
                 isGameOver = true;
                 Gdx.input.vibrate(20);
                 summDelta = 0;
