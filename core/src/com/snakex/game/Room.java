@@ -124,16 +124,16 @@ public class Room implements Screen {
                 // 20 - стартовое смещение игрового поля относительно экрана,
                 // 2 - смещение клеток поля внутри группы,
                 // 18 - (половина клетки) поскольку берём центральный пиксель клетки)
-                if (x < snake.getHead().x * 29 + 20 + 2 + 18)
+                if (x < snake.body.getHead().x * 29 + 20 + 2 + 18)
                     newDirection = Snake.Direction.LEFT;
-                if (x > snake.getHead().x * 29 + 20 + 2 + 18)
+                if (x > snake.body.getHead().x * 29 + 20 + 2 + 18)
                     newDirection = Snake.Direction.RIGHT;
 
                 // Если мы сейчас уже двигаемся по X то двигаемся по Y
                 if (newDirection == snake.direction || newDirection.opposite() == snake.direction) {
-                    if (y > snake.getHead().y * 29 + 20 + 2 + 18)
+                    if (y > snake.body.getHead().y * 29 + 20 + 2 + 18)
                         newDirection = Snake.Direction.UP;
-                    if (y < snake.getHead().y * 29 + 20 + 2 + 18)
+                    if (y < snake.body.getHead().y * 29 + 20 + 2 + 18)
                         newDirection = Snake.Direction.DOWN;
                 }
                 snake.newDirection = newDirection;

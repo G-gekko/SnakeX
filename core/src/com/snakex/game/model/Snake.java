@@ -18,7 +18,7 @@ public class Snake {
     public Direction direction;             // Текущее направление движения змеи.
     public Direction newDirection;          // Новое направление движения (куда указывает пользователь)
     public boolean isAlive;                 // Жива ли наша змея?
-    public LinkedList<SnakeSection> body;   // хвост находится в начале списка, голова в конце.
+    public final SnakeBody body;                 // Тело змеи.
 
     public Snake(Room ROOM) {
         GAME = ROOM;
@@ -26,9 +26,9 @@ public class Snake {
         direction = Direction.UP;
         newDirection = Direction.UP;
         isAlive = true;
-        body = new LinkedList<SnakeSection>();
-        body.add(new SnakeSection(GAME.lvl.width / 2, GAME.lvl.height / 2));
-        GAME.drawWorld.setType(getHead().x, getHead().y, CellType.HEAD);
+        body = new SnakeBody();
+        body.addHead(new SnakeSection(GAME.lvl.width / 2, GAME.lvl.height / 2));
+        GAME.drawWorld.setType(body.getHead().x, body.getHead().y, CellType.HEAD);
     }
 
     /*
@@ -38,10 +38,10 @@ public class Snake {
         if (!isAlive) return;
 
         //    Если кусок змеи сытый, то появится новый кусок.
-        if (getTail().isDigesting) {
-            getTail().isDigesting = false;
+        if (body.getTail().isDigesting) {
+            body.getTail().isDigesting = false;
             GAME.addScore(7);
-            body.addFirst(new SnakeSection(getTail()));
+            body.addTail(new SnakeSection(body.getTail()));
         }
 
         // Меняем направление движения, если нужно
@@ -52,35 +52,26 @@ public class Snake {
 
         // Переносим элемент из хвоста в голову сдвигая позицию и очищая клетку
         // TODO тут я что-то написал какой то сомнительный код =/ весь блок надо переписать!
-        GAME.drawWorld.setType(getTail().x, getTail().y, CellType.FREE);
-        SnakeSection newHead = getTail().setNewHeadPosition(getHead(), direction, GAME.lvl, this);
+        GAME.drawWorld.setType(body.getTail().x, body.getTail().y, CellType.FREE);
+        SnakeSection newHead = body.getTail().setNewHeadPosition(body.getHead(), direction, GAME.lvl, this);
         if (!isAlive) {
             // если мы врезались, то хвост неверно делать пустым
-            GAME.drawWorld.setType(getTail().x, getTail().y, CellType.BODY);
+            GAME.drawWorld.setType(body.getTail().x, body.getTail().y, CellType.BODY);
             return;
         }
-        body.addLast(newHead);
-        body.removeFirst();
+        body.addHead(newHead);
+        body.removeTail();
 
 
         // Если голова на одной клетке с мышью - едим и создаём новую мышь.
-        if (getHead().x == GAME.mouse.x && getHead().y == GAME.mouse.y) {
-            getHead().isDigesting = true;
+        if (body.getHead().x == GAME.mouse.x && body.getHead().y == GAME.mouse.y) {
+            body.getHead().isDigesting = true;
             GAME.addScore(3);
             GAME.mouse.genNewMouse();
         }
 
         // Меняем состояние клеток мира (дабы перерисавать змею)
-        for (SnakeSection currSection : body) {
-            if (currSection.isDigesting)
-                GAME.drawWorld.setType(currSection.x, currSection.y, CellType.BODY_EATEN);
-            else
-                GAME.drawWorld.setType(currSection.x, currSection.y, CellType.BODY);
-        }
-        if (getHead().isDigesting)
-            GAME.drawWorld.setType(getHead().x, getHead().y, CellType.HEAD_EATEN);
-        else
-            GAME.drawWorld.setType(getHead().x, getHead().y, CellType.HEAD);
+        body.updateDrawWorld(GAME.drawWorld);
     }
 
     /*
@@ -94,13 +85,7 @@ public class Snake {
         Методы проверки столкновений с телом змеи. Вернёт true если произойдёт столкновение
      */
     public boolean checkBody(SnakeSection head) {
-        for (SnakeSection currSection : body) {
-            if (currSection != head &&
-                    currSection.x == head.x && currSection.y == head.y) {
-                return true;
-            }
-        }
-        return false;
+        return body.isContain(head.x, head.y, head);
     }
 
     /*
@@ -145,20 +130,6 @@ public class Snake {
         public Direction opposite() {
             return null;
         }
-    }
-
-    /*
-         Методы для улучшения читаемости кода, заменяют путанные и непонятные getLast и getFirst
-         на методы содержащие смысловую подсказку в имени hetHead и getTail
-
-         TODO Имеет смысл сделать аналогичные методы для set (add) элементов
-     */
-    public SnakeSection getHead() {
-        return body.getLast();
-    }
-
-    private SnakeSection getTail() {
-        return body.getFirst();
     }
 }
 

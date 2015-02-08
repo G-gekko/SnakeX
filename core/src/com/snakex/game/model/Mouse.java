@@ -33,17 +33,11 @@ public class Mouse {
         // если мы 5 и более раз пытались случайным образом создать мыш, но не получилось
         // делаем простой перебор в поисках свободной позиции.
         // если такой нет, то змея умирает (всё поле заполнено)
+        
         if (genCnt >= 5) {
             for (int x = 0; x < GAME.lvl.width; x++)
                 for (int y = 0; y < GAME.lvl.height; y++) {
-                    boolean isCanUsed = true;
-                    for (SnakeSection currSection : GAME.snake.body) {
-                        if (GAME.lvl.isBorders(x, y) || (currSection.x == x && currSection.y == y)) {
-                            isCanUsed = false;
-                            break;
-                        }
-                    }
-                    if (isCanUsed) {
+                    if (!GAME.snake.body.isContain(x, y)) {
                         this.x = x;
                         this.y = y;
                         GAME.drawWorld.setType(x, y, CellType.MOUSE);
@@ -58,14 +52,8 @@ public class Mouse {
         // увеличиваем счётчик попыток
         int x = (int) (Math.random() * GAME.lvl.width);
         int y = (int) (Math.random() * GAME.lvl.height);
-        boolean isCanUsed = true;
-        for (SnakeSection currSection : GAME.snake.body) {
-            if (GAME.lvl.isBorders(x, y) || (currSection.x == x && currSection.y == y)) {
-                isCanUsed = false;
-                break;
-            }
-        }
-        if (!isCanUsed) {
+
+        if (GAME.snake.body.isContain(x, y)) {
             genNewMouse(genCnt + 1);
         } else {
             this.x = x;
