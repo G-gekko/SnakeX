@@ -67,6 +67,20 @@ public class Room implements Screen {
         };
         scoreLabel.setPosition(22, 567);
         stage.addActor(scoreLabel);
+        
+        // Таймер игровой паузы
+        style = new Label.LabelStyle(SnakeX.fontBig, Color.BLACK);
+        gameTimer = new Label(String.valueOf(timer), style) {
+            @Override
+            public void draw(Batch batch, float parentAlpha) {
+                if (timer > 0)
+                    this.setText(String.valueOf(timer));
+                super.draw(batch, parentAlpha);
+            }
+        };
+        gameTimer.setAlignment(0);
+        gameTimer.setPosition(380, 300);
+        stage.addActor(gameTimer);
 
         // Подключаем управление стрелками для змеи.
         stage.addListener(new InputListener() {
@@ -140,15 +154,30 @@ public class Room implements Screen {
     private float summDelta;
     private boolean isGameOver = false;
 
+    // Таймер игровой паузы
+    private Label gameTimer;
+    private int timer = 3;
+
     @Override
     public void render(float delta) {
         // закраска экрана и очистка его
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        // пересчёт игровой логики (движение змеи) через определённый временной интервал, если змея жива.
         summDelta += delta;
-        if (snake.isAlive && summDelta >= 0.2) {
+        
+        // Если игра только началась, или вернулась с паузы, то пускаем таймер
+        if (timer > 0) {
+           if (summDelta >= 1.0){
+               timer--;
+               summDelta = 0;
+           }
+        } else {
+            gameTimer.setVisible(false);
+        }
+        
+        // пересчёт игровой логики (движение змеи) через определённый временной интервал, если змея жива.
+        if (timer <= 0 && snake.isAlive && summDelta >= 0.2) {
             summDelta = 0;
             snake.move();
         }
@@ -200,6 +229,8 @@ public class Room implements Screen {
 
     @Override
     public void pause() {
+        timer = 3;
+        gameTimer.setVisible(true);
     }
 
     @Override
